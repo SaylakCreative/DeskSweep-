@@ -54,10 +54,14 @@
       ],
       "signExecutable": false
     },
+    "artifactName": "DeskSweep-Setup-${version}.${ext}",
     "nsis": {
       "oneClick": false,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "multiLanguageInstaller": true,
+      "installerLanguages": ["en_US", "tr_TR"],
+      "license": "LICENSE"
     }
   },
   "devDependencies": {

@@ -56,7 +56,7 @@ Fikir, internette dolaşan bir "masaüstü robot süpürgesi" demosundan esinlen
 
 ## Kurulum
 
-[Releases](https://github.com/saylakcreativve/DeskSweep-/releases) sayfasından `DeskSweep Setup x.y.z.exe` dosyasını indirip çalıştır. Kurulum kullanıcı bazlıdır, yönetici izni gerekmez.
+[Releases](https://github.com/saylakcreativve/DeskSweep-/releases) sayfasından `DeskSweep-Setup-x.y.z.exe` dosyasını indirip çalıştır. Sihirbaz Türkçe ve İngilizce destekler, kurulum kullanıcı bazlıdır, yönetici izni gerekmez.
 
 > Kurulum dosyası kod imzalı değildir; Windows SmartScreen "tanınmayan uygulama" uyarısı gösterebilir. **Ek bilgi → Yine de çalıştır** ile devam edebilirsin. Güvenmek istemezsen kaynağı okuyup kendin derleyebilirsin (aşağıda).
 

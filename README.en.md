@@ -28,7 +28,7 @@ A little robot rolls over your desktop icons and sweeps the files you chose into
 
 ## Install
 
-Download `DeskSweep Setup x.y.z.exe` from [Releases](https://github.com/saylakcreativve/DeskSweep-/releases). It installs per-user, no admin rights needed.
+Download `DeskSweep-Setup-x.y.z.exe` from [Releases](https://github.com/saylakcreativve/DeskSweep-/releases). The wizard is available in English and Turkish and installs per-user, no admin rights needed.
 
 > The installer is not code-signed, so Windows SmartScreen may warn about an unrecognised app: **More info → Run anyway**.
 
