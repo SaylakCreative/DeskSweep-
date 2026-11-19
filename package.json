@@ -1,0 +1,72 @@
+{
+  "name": "desksweep",
+  "version": "0.1.0",
+  "description": "An open-source robot vacuum that tidies your desktop. Safe by design: nothing is ever deleted, every sweep can be undone.",
+  "license": "MIT",
+  "author": "DeskSweep contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saylakcreativve/DeskSweep-.git"
+  },
+  "homepage": "https://github.com/saylakcreativve/DeskSweep-#readme",
+  "bugs": {
+    "url": "https://github.com/saylakcreativve/DeskSweep-/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "dist/main/main.js",
+  "scripts": {
+    "postinstall": "node scripts/ensure-electron.mjs",
+    "build": "tsc -p tsconfig.json && node scripts/copy-assets.mjs",
+    "start": "npm run build && electron .",
+    "dev:dry": "npm run build && electron . --dry-run",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "capture": "npm run build && electron scripts/capture/capture.cjs",
+    "pack": "npm run build && electron-builder --win --dir",
+    "dist": "npm run build && electron-builder --win nsis"
+  },
+  "keywords": [
+    "desktop",
+    "cleanup",
+    "electron",
+    "robot-vacuum",
+    "organizer"
+  ],
+  "build": {
+    "appId": "com.desksweep.app",
+    "productName": "DeskSweep",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "build/icon.ico",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "dist/native/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "signExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0",
+    "gifenc": "^1.0.3",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1"
+  }
+}
+

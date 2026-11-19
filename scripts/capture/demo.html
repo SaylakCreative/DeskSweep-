@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #1d2027; font-family: "Segoe UI", sans-serif; }
+      .icon { position: absolute; width: 84px; text-align: center; color: #f2f3f5; font-size: 11px; line-height: 1.25; text-shadow: 0 1px 2px rgba(0,0,0,.8); }
+      .glyph { width: 40px; height: 48px; margin: 0 auto 5px; border-radius: 5px; position: relative; display: grid; place-items: end center; padding-bottom: 6px; box-sizing: border-box; font-size: 9px; font-weight: 700; color: rgba(255,255,255,.95); }
+      .glyph::before { content: ""; position: absolute; top: 0; right: 0; width: 12px; height: 12px; background: rgba(0,0,0,.25); border-radius: 0 5px 0 5px; }
+      .pdf { background: #d9534f; } .mp3 { background: #8e6bd8; } .png { background: #3a9fd6; } .xlsx { background: #2e9e63; }
+      .mp4 { background: #d9822b; } .fig { background: #c2478a; } .zip { background: #9a9a58; } .exe { background: #5b6779; }
+      .txt { background: #6f7886; } .md { background: #4c8c8c; }
+      .glyph.folder { background: #e0b34a; border-radius: 6px; height: 40px; margin-top: 8px; }
+      .glyph.folder::before { top: -7px; left: 0; right: auto; width: 18px; height: 8px; border-radius: 4px 4px 0 0; background: #e0b34a; }
+      .glyph.folder { display: block; }
+      .taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 38px; background: rgba(12,13,17,.92); border-top: 1px solid #2c303a; display: flex; align-items: center; justify-content: center; gap: 10px; }
+      .taskbar i { width: 22px; height: 22px; border-radius: 6px; background: #3a3f4b; }
+      canvas { position: fixed; inset: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="icons"></div>
+    <div class="taskbar"><i></i><i></i><i></i><i></i><i></i></div>
+    <canvas id="c"></canvas>
+    <script>
+      // [label, ext, x, y, sweepable]
+      const ICONS = [
+        ["report.pdf", "PDF", 560, 70, 1], ["song.mp3", "MP3", 300, 120, 1], ["Screenshot 2026-11.png", "PNG", 150, 60, 1],
+        ["budget.xlsx", "XLS", 700, 190, 1], ["holiday.mp4", "MP4", 420, 250, 1], ["design_v12.fig", "FIG", 100, 250, 1],
+        ["node_modules.zip", "ZIP", 620, 330, 1], ["installer.exe", "EXE", 250, 360, 1], ["essay_final_real.txt", "TXT", 820, 90, 1],
+        ["logo-new.png", "PNG", 480, 410, 1], ["meeting notes.md", "MD", 830, 300, 1], ["DONT DELETE", "folder", 60, 400, 0],
+        ["projects", "folder", 360, 40, 0]
+      ];
+      const host = document.getElementById("icons");
+      for (const [label, ext, x, y, sweep] of ICONS) {
+        const el = document.createElement("div");
+        el.className = "icon";
+        el.style.left = x + "px"; el.style.top = y + "px";
+        el.dataset.name = label;
+        if (sweep) el.dataset.sweep = "1";
+        const g = document.createElement("div");
+        g.className = ext === "folder" ? "glyph folder" : "glyph " + ({ XLS: "xlsx", FIG: "fig" }[ext] || ext.toLowerCase());
+        if (ext !== "folder") g.textContent = ext;
+        const t = document.createElement("div");
+        t.textContent = label;
+        el.append(g, t);
+        host.append(el);
+      }
+    </script>
+    <script src="../../dist/renderer/renderer.js"></script>
+  </body>
+</html>
