@@ -84,6 +84,10 @@ Ayarlar `%APPDATA%\desksweep\config.json`, geri alma günlüğü aynı klasörde
 
 Test için `DESKSWEEP_DESKTOP` ve `DESKSWEEP_USERDATA` ortam değişkenleri masaüstü ve ayar klasörünü geçici klasörlere yönlendirir.
 
+## Gizlilik
+
+DeskSweep hiçbir veri toplamaz ve internete bağlanmaz. Ayrıntılar: [PRIVACY.md](PRIVACY.md).
+
 ## Güvenlik ilkeleri
 
 Silme yok, üzerine yazma yok, klasörlere dokunma yok (varsayılan), her taşıma anında günlüğe yazılır ve geri alınabilir, config'teki kategori adları hedef klasörün dışına çıkamaz, yedek klasörünün kendisi asla süpürülmez.

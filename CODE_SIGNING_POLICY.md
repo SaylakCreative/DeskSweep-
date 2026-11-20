@@ -26,7 +26,7 @@ All team members use multi-factor authentication on GitHub and SignPath.
 
 This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
 
-DeskSweep contains no telemetry, analytics, crash reporting or automatic update checks. Its settings and undo journal stay in `%APPDATA%\desksweep` on your computer.
+DeskSweep contains no telemetry, analytics, crash reporting or automatic update checks. Its settings and undo journal stay in `%APPDATA%\desksweep` on your computer. Full details: [Privacy policy](PRIVACY.md).
 
 ## Reporting problems
 

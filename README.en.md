@@ -43,6 +43,10 @@ npm run dev:dry   # preview only, nothing is moved
 npm start         # settings window + tray icon
 npm run dist      # Windows installer in release\
 ```
+## Privacy
+
+DeskSweep collects no data and makes no network connections. Details: [PRIVACY.md](PRIVACY.md).
+
 ## Known limits
 
 - Windows only (icon reading and the overlay rely on Win32).
