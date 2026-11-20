@@ -15,7 +15,7 @@ interface CfgShape {
   sweepFolders: boolean;
   minAgeDays: number;
   protectedPatterns: string[];
-  robot: { speed: number; color: string };
+  robot: { skin: "auto" | "classic" | "winter"; speed: number; color: string };
   rules: CfgRule[];
 }
 
@@ -24,6 +24,7 @@ interface SettingsBootstrap {
   strings: Record<"en" | "tr", Record<string, string>>;
   builtinCategories: string[];
   isPackaged: boolean;
+  resolvedSkin: string;
   defaultDestination: string;
 }
 
@@ -65,6 +66,7 @@ interface Window {
     Folders: '<path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>',
     custom: '<path d="M3.5 12V4.5H11l9 9-7.5 7.5z"/><circle cx="8" cy="9" r="1.2"/>',
     folderOpen: '<path d="M3.5 18.5V6.5a2 2 0 0 1 2-2h3.8l2 2.2h7.2a2 2 0 0 1 2 2V10"/><path d="M3.5 18.5l2.4-7.2a1.5 1.5 0 0 1 1.4-1h13.2a1 1 0 0 1 1 1.3l-2 6.4a1.5 1.5 0 0 1-1.4 1.1z"/>',
+    snow: '<path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5L12 6.5l2.5-2M9.5 19.5l2.5-2 2.5 2"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     close: '<path d="M6 6l12 12M18 6L6 18"/>',
     undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h9.5a6.5 6.5 0 0 1 0 13H10"/>',
@@ -233,18 +235,45 @@ interface Window {
     return el("div", {}, head(t("backup"), t("backupHint")), el("div", { className: "stack" }, card));
   }
 
-  const ROBOT_SVG = `<svg viewBox="0 0 100 100" width="112" height="112" aria-hidden="true">
-    <ellipse cx="53" cy="56" rx="38" ry="34" fill="rgba(0,0,0,.2)"/>
-    <circle cx="50" cy="50" r="38" fill="#f1f1f3" stroke="#b9bcc4" stroke-width="3"/>
-    <circle cx="57" cy="50" r="13" fill="#17171a"/><circle cx="60" cy="46" r="4" class="lens"/>
-    <g stroke="#ff9a3c" stroke-width="3" stroke-linecap="round"><path d="M72 76l8 5M72 76l1-9M72 76l-7 4"/></g></svg>`;
+  let previewFrame = 0;
+  const stopPreview = () => cancelAnimationFrame(previewFrame);
+
+  /** Live preview: the real skin drawing code, on a small canvas. */
+  function skinPreview(): HTMLElement {
+    const box = el("div", { className: "robot-prev" });
+    const canvas = el("canvas");
+    canvas.width = 300;
+    canvas.height = 300;
+    canvas.style.width = "150px";
+    canvas.style.height = "150px";
+    box.append(canvas);
+
+    const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+    const skin = DeskSkins.get(cfg.robot.skin === "auto" ? boot.resolvedSkin : cfg.robot.skin);
+    const ambient = skin.createAmbient?.(150, 150);
+
+    const tick = (now: number) => {
+      const state = { time: now, accent: cfg.robot.color };
+      ctx.setTransform(2, 0, 0, 2, 0, 0);
+      ctx.clearRect(0, 0, 150, 150);
+      ambient?.draw(ctx, now);
+      ctx.save(); ctx.translate(75, 82); ctx.scale(1.2, 1.2); ctx.rotate(0.3);
+      skin.drawBody(ctx, state);
+      ctx.restore();
+      if (skin.drawOverlay) {
+        ctx.save(); ctx.translate(75, 82); ctx.scale(1.2, 1.2);
+        skin.drawOverlay(ctx, state);
+        ctx.restore();
+      }
+      previewFrame = requestAnimationFrame(tick);
+    };
+    previewFrame = requestAnimationFrame(tick);
+    return box;
+  }
 
   function robotPage(): HTMLElement {
-    const prev = el("div", { className: "robot-prev" });
-    prev.innerHTML = ROBOT_SVG; // constant markup, no user data
-    const lens = prev.querySelector(".lens") as SVGElement;
-    const paint = () => lens.setAttribute("fill", cfg.robot.color);
-    paint();
+    const prev = skinPreview();
+    const paint = () => { /* the preview reads cfg.robot.color on every frame */ };
 
     const speedValue = el("span", { textContent: `${cfg.robot.speed} px/s` });
     const speed = el("input", { type: "range", min: "40", max: "400", step: "10", value: String(cfg.robot.speed) });
@@ -265,7 +294,18 @@ interface Window {
     swatches.append(custom);
     markSwatches();
 
+    const skinPicker = optionGroup<CfgShape["robot"]["skin"]>(
+      [
+        { value: "auto", label: t("skinAuto"), icon: "automation" },
+        { value: "classic", label: t("skinClassic"), icon: "robot" },
+        { value: "winter", label: t("skinWinter"), icon: "snow" }
+      ],
+      cfg.robot.skin,
+      (v) => { cfg.robot.skin = v; markDirty(); render(); });
+
     const controls = el("div", { className: "grow" },
+      el("div", { className: "field" }, el("label", { className: "lbl" }, t("skin")), skinPicker,
+        el("p", { className: "sub spaced", textContent: t("skinHint") })),
       el("div", { className: "field" }, el("label", { className: "lbl" }, t("speed"), speedValue), speed,
         el("div", { className: "row between" }, el("span", { className: "sub", textContent: t("slow") }), el("span", { className: "sub", textContent: t("fast") }))),
       el("div", { className: "field" }, el("label", { className: "lbl" }, t("color")), swatches));
@@ -367,6 +407,7 @@ interface Window {
   }
 
   function render(): void {
+    stopPreview();
     document.title = t("appTitle");
     (document.getElementById("tagline") as HTMLElement).textContent = t("tagline");
     renderNav();
@@ -391,6 +432,9 @@ interface Window {
   async function saveThen(action: () => void): Promise<void> {
     if (dirty) await save();
     action();
+    // Feedback while the robot gets ready (it takes a moment to appear).
+    setStatus(t("starting"));
+    setTimeout(() => { if (status.textContent === t("starting")) setStatus(""); }, 4000);
   }
 
   (document.getElementById("btn-save") as HTMLButtonElement).onclick = () => void save();

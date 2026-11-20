@@ -16,6 +16,14 @@ A little robot rolls over your desktop icons and sweeps the files you chose into
 
 <p align="center"><sub>Recorded on a fake desktop with the real robot animation.</sub></p>
 
+### 🎄 Winter / New Year look
+
+The robot wears a Santa hat, it snows, and swept files turn into gift boxes. Pick it under Settings → Robot → Look; **Seasonal** switches to it automatically from 15 December to 5 January. (Coming in v0.2.0.)
+
+<p align="center">
+  <img src="docs/images/demo-winter.gif" alt="DeskSweep robot with the winter look" width="720">
+</p>
+
 ## Features
 
 - Robot drives to the **real icon positions** (read from Explorer) and sweeps them; it works above the icons but **behind** your other windows.

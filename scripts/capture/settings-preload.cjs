@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld("settingsApi", {
     strings,
     builtinCategories: BUILTIN_CATEGORIES,
     isPackaged: true,
+    resolvedSkin: config.robot.skin === "winter" ? "winter" : "classic",
     defaultDestination: "C:\\Users\\you\\Desktop\\DeskSweep"
   }),
   save: async (c) => c,

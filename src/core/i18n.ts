@@ -4,6 +4,12 @@ type Dict = Record<string, string>;
 
 const en: Dict = {
   appTitle: "DeskSweep Settings",
+  starting: "Starting the robot…",
+  skin: "Look",
+  skinHint: "Seasonal switches to the Winter look from 15 December to 5 January.",
+  skinAuto: "Seasonal",
+  skinClassic: "Classic",
+  skinWinter: "Winter",
   trayHint: "DeskSweep is still running in the system tray. Click the icon to reopen it; right-click to quit.",
   automation: "Automation",
   automationHint: "Let the robot work on its own. Every sweep can still be undone.",
@@ -84,6 +90,12 @@ const en: Dict = {
 
 const tr: Dict = {
   appTitle: "DeskSweep Ayarları",
+  starting: "Robot başlatılıyor…",
+  skin: "Görünüm",
+  skinHint: "Mevsimlik, 15 Aralık ile 5 Ocak arasında Kış görünümüne geçer.",
+  skinAuto: "Mevsimlik",
+  skinClassic: "Klasik",
+  skinWinter: "Kış",
   trayHint: "DeskSweep sistem tepsisinde çalışmaya devam ediyor. Yeniden açmak için simgeye tıkla; çıkmak için sağ tıkla.",
   automation: "Otomasyon",
   automationHint: "Robot kendi kendine çalışsın. Her süpürme yine geri alınabilir.",

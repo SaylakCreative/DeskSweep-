@@ -17,7 +17,8 @@ async function settingsShots() {
     { file: "settings-clean-dark.png", theme: "dark", page: 0, cfg: {} },
     { file: "settings-clean-light.png", theme: "light", page: 0, cfg: {} },
     { file: "settings-backup-dark.png", theme: "dark", page: 1, cfg: { destinationDir: "D:\\Backups\\Desktop" } },
-    { file: "settings-robot-dark.png", theme: "dark", page: 2, cfg: {} }
+    { file: "settings-robot-dark.png", theme: "dark", page: 2, cfg: { robot: { skin: "classic", speed: 150, color: "#6ea8ff" } } },
+    { file: "settings-robot-winter.png", theme: "dark", page: 2, cfg: { robot: { skin: "winter", speed: 150, color: "#6ea8ff" } } }
   ];
   for (const s of shots) {
     nativeTheme.themeSource = s.theme;
@@ -38,7 +39,8 @@ async function settingsShots() {
   }
 }
 
-function recordDemo() {
+function recordDemo(file, skin) {
+  process.env.CAPTURE_SKIN = skin;
   return new Promise((resolve) => {
     const win = new BrowserWindow({
       width: 960, height: 540, show: false, useContentSize: true,
@@ -65,9 +67,13 @@ function recordDemo() {
         rgba[i] = bgra[i + 2]; rgba[i + 1] = bgra[i + 1]; rgba[i + 2] = bgra[i]; rgba[i + 3] = 255;
       }
       const now = Date.now();
+      if (process.env.CAPTURE_DEBUG && !win.earlySaved && now - startedAt > 1300) {
+        win.earlySaved = true; // a still of the dock moment, just before the robot rolls out
+        fs.writeFileSync(path.join(app.getPath("temp"), `demo-early-${skin}.png`), small.toPNG());
+      }
       if (process.env.CAPTURE_DEBUG && !win.debugSaved && now - startedAt > 5000) {
         win.debugSaved = true; // a still from mid-sweep, to eyeball the result
-        fs.writeFileSync(path.join(app.getPath("temp"), "demo-frame.png"), small.toPNG());
+        fs.writeFileSync(path.join(app.getPath("temp"), `demo-frame-${skin}.png`), small.toPNG());
       }
       flush(now, 20);
       prev = rgba;
@@ -78,9 +84,9 @@ function recordDemo() {
       await sleep(900);
       flush(Date.now(), 2500); // hold the last frame (clean desktop) before looping
       gif.finish();
-      fs.writeFileSync(path.join(out, "demo.gif"), Buffer.from(gif.bytes()));
+      fs.writeFileSync(path.join(out, file), Buffer.from(gif.bytes()));
       win.destroy();
-      console.log("wrote demo.gif");
+      console.log("wrote", file);
       resolve();
     };
     ipcMain.once("demo-finish", finish);
@@ -95,6 +101,7 @@ app.on("window-all-closed", () => {});
 app.whenReady().then(async () => {
   fs.mkdirSync(out, { recursive: true });
   await settingsShots();
-  await recordDemo();
+  await recordDemo("demo.gif", "classic");
+  await recordDemo("demo-winter.gif", "winter");
   app.quit();
 });

@@ -1,12 +1,13 @@
 import { BrowserWindow, Menu, Notification, Tray, app, dialog, ipcMain, nativeImage, nativeTheme, screen, shell } from "electron";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { BUILTIN_CATEGORIES, normalizeConfig } from "../core/config";
+import { BUILTIN_CATEGORIES, normalizeConfig, parseConfigText } from "../core/config";
 import { matchIcons } from "../core/iconMatch";
 import { strings, t } from "../core/i18n";
 import { Journal, applyMove } from "../core/journal";
-import { estimateIconPositions } from "../core/layout";
+import { estimateIconPositions, pickDockSpot } from "../core/layout";
 import { buildPlan, resolveDestination } from "../core/planner";
+import { resolveSkin } from "../core/skins";
 import type { Config, Entry, Language, PlanItem } from "../core/types";
 import type { ChildProcess } from "node:child_process";
 import { readDesktopIcons } from "./icons";
@@ -30,6 +31,12 @@ let scheduleTimer: NodeJS.Timeout | undefined;
 let quitting = false;
 let trayHintShown = false;
 
+// The robot overlay sits behind every other window. Without these switches Chromium decides a
+// fully covered window is hidden and pauses its animation, which froze the sweep whenever an app
+// was maximized.
+app.commandLine.appendSwitch("disable-features", "CalculateNativeWinOcclusion");
+app.commandLine.appendSwitch("disable-backgrounding-occluded-windows");
+
 // Test hooks: let automated runs use throw-away folders instead of the real profile and desktop.
 if (process.env.DESKSWEEP_USERDATA) app.setPath("userData", process.env.DESKSWEEP_USERDATA);
 const desktopDir = (): string => process.env.DESKSWEEP_DESKTOP || app.getPath("desktop");
@@ -46,7 +53,7 @@ function loadConfig(): Config {
     return fresh;
   }
   try {
-    return normalizeConfig(JSON.parse(fs.readFileSync(file, "utf8")), systemLanguage());
+    return parseConfigText(fs.readFileSync(file, "utf8"), systemLanguage());
   } catch {
     const fallback = normalizeConfig({}, systemLanguage());
     notify(t(fallback.language, "invalidConfig"));
@@ -79,6 +86,12 @@ function readDesktop(dir: string): Entry[] {
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
+/** Timing output for debugging, enabled with the DESKSWEEP_TRACE environment variable. */
+const traceStart = Date.now();
+const trace = (...args: unknown[]): void => {
+  if (process.env.DESKSWEEP_TRACE) console.log(`[trace +${((Date.now() - traceStart) / 1000).toFixed(1)}s]`, ...args);
+};
+
 async function startRun(dry: boolean): Promise<void> {
   if (run || starting) return;
   starting = true;
@@ -95,18 +108,6 @@ async function startRun(dry: boolean): Promise<void> {
 
     const display = screen.getPrimaryDisplay();
     const { x, y, width, height } = display.bounds;
-
-    // Start from the estimated grid, then overwrite with the real icon positions Explorer reports.
-    const positions = estimateIconPositions(entries, config.iconGrid, height);
-    const icons = await readDesktopIcons();
-    if (icons) {
-      for (const [name, p] of matchIcons(entries, icons)) {
-        const dip = screen.screenToDipPoint({ x: Math.round(p.x), y: Math.round(p.y) });
-        // Icons on another monitor: send the robot to the nearest edge of this one.
-        positions.set(name, { x: clamp(dip.x - x, 40, width - 40), y: clamp(dip.y - y, 40, height - 40) });
-      }
-    }
-
     const win = new BrowserWindow({
       x, y, width, height,
       transparent: true,
@@ -118,6 +119,7 @@ async function startRun(dry: boolean): Promise<void> {
       focusable: false,
       show: false, // shown only after it has been sent behind every app window
       webPreferences: {
+        backgroundThrottling: false, // keep animating while apps cover the desktop
         preload: path.join(__dirname, "preload.js"),
         contextIsolation: true,
         sandbox: true,
@@ -128,37 +130,64 @@ async function startRun(dry: boolean): Promise<void> {
 
     run = { win, dry, plan, batchId: String(Date.now()), moved: 0, failed: 0 };
 
-    win.webContents.once("did-finish-load", async () => {
-      // The robot lives on the desktop: above the icons, below every other window.
-      const helper = await pushToBottom(win);
-      if (!run || run.win !== win || win.isDestroyed()) {
-        helper?.kill();
-        return;
-      }
-      run.helper = helper;
-      win.showInactive();
-      win.webContents.send("start", {
-        dry,
-        width,
-        height,
-        speed: config.robot.speed,
-        color: config.robot.color,
-        items: plan.map((p) => ({
-          id: p.id,
-          name: p.name,
-          category: p.category,
-          ...(positions.get(p.name) ?? { x: width / 2, y: height / 2 })
-        }))
-      });
-    });
     win.on("closed", () => finishRun());
 
     // Never leave a half-started run behind: it would block every later sweep until restart.
     const abort = () => { if (run?.win === win) finishRun(); };
     win.webContents.on("render-process-gone", abort);
+    win.webContents.on("console-message", (event) => trace("renderer:", (event as unknown as { message?: string }).message ?? event));
     win.webContents.on("did-fail-load", abort);
     setTimeout(abort, 15 * 60_000); // hard cap on a single run
+
+    const loaded = new Promise<void>((resolve) => {
+      win.webContents.once("did-finish-load", () => resolve());
+      win.webContents.once("did-fail-load", () => resolve());
+    });
     void win.loadFile(path.join(__dirname, "..", "renderer", "index.html"));
+
+    // The three slow things run at the same time instead of one after another: the page loads,
+    // Explorer is asked where the icons are, and the window is sent behind every other app
+    // (the robot lives on the desktop: above the icons, below other windows).
+    const t0 = Date.now();
+    const [icons, helper] = await Promise.all([readDesktopIcons(), pushToBottom(win), loaded]);
+    trace("ready after", Date.now() - t0, "ms; real icon positions:", icons ? icons.length : "none");
+
+    if (!run || run.win !== win || win.isDestroyed()) {
+      helper?.kill();
+      return;
+    }
+    run.helper = helper;
+
+    // Start from the estimated grid, then overwrite with the real icon positions Explorer reports.
+    const positions = estimateIconPositions(entries, config.iconGrid, height);
+    if (icons) {
+      for (const [name, p] of matchIcons(entries, icons)) {
+        const dip = screen.screenToDipPoint({ x: Math.round(p.x), y: Math.round(p.y) });
+        // Icons on another monitor: send the robot to the nearest edge of this one.
+        positions.set(name, { x: clamp(dip.x - x, 40, width - 40), y: clamp(dip.y - y, 40, height - 40) });
+      }
+    }
+
+    // The robot's charging dock: a corner of the usable area (above the taskbar) away from the icons.
+    const area = display.workArea;
+    const dock = pickDockSpot({ x: area.x - x, y: area.y - y, width: area.width, height: area.height }, [...positions.values()]);
+
+    win.showInactive();
+    win.webContents.send("start", {
+      dry,
+      width,
+      height,
+      dock,
+      skin: resolveSkin(config.robot.skin),
+      speed: config.robot.speed,
+      color: config.robot.color,
+      items: plan.map((p) => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        ...(positions.get(p.name) ?? { x: width / 2, y: height / 2 })
+      }))
+    });
   } finally {
     starting = false;
   }
@@ -167,6 +196,7 @@ async function startRun(dry: boolean): Promise<void> {
 function finishRun(): void {
   if (!run) return;
   const { win, helper, dry, plan, moved, failed } = run;
+  trace("run finished");
   run = undefined;
   helper?.kill();
   if (!win.isDestroyed()) win.destroy();
@@ -195,6 +225,7 @@ ipcMain.handle("sweep", (_e, id: number) => {
     applyMove(move);
     journal().record(run.batchId, move); // logged right away: a crash mid-sweep stays undoable
     run.moved++;
+    trace("swept", item.name);
     return { ok: true };
   } catch (err) {
     run.failed++;
@@ -280,6 +311,7 @@ ipcMain.handle("settings:get", () => {
     strings,
     builtinCategories: BUILTIN_CATEGORIES,
     isPackaged: app.isPackaged,
+    resolvedSkin: resolveSkin(config.robot.skin),
     defaultDestination: resolveDestination({ ...config, destinationDir: "" }, desktopDir())
   };
 });

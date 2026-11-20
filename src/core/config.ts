@@ -1,5 +1,6 @@
 import * as path from "node:path";
-import type { Config, Language, Rule } from "./types";
+import { SKIN_PREFERENCES } from "./skins";
+import type { Config, Language, Rule, SkinPreference } from "./types";
 
 /** Display ids of the rules that ship with the app (the UI can't delete these, only disable them). */
 export const BUILTIN_CATEGORIES = ["Screenshots", "Installers", "Archives", "Documents", "Images", "Music", "Videos", "Design", "Code"];
@@ -23,7 +24,7 @@ export const defaultConfig: Config = {
     "*silme*",
     "*keep*"
   ],
-  robot: { speed: 150, color: "#6ea8ff" },
+  robot: { skin: "auto", speed: 150, color: "#6ea8ff" },
   iconGrid: { cellWidth: 75, cellHeight: 100, margin: 8 },
   rules: [
     { name: "Screenshots", category: "Screenshots", namePattern: "^(screenshot|screen shot|ekran görüntüsü|capture)" },
@@ -63,6 +64,14 @@ function normalizeRule(raw: unknown): Rule[] {
   return [rule];
 }
 
+/**
+ * Parses the text of config.json. Some editors (older Notepad, PowerShell's -Encoding utf8) save a
+ * UTF-8 BOM that JSON.parse rejects, which would silently throw away the user's settings.
+ */
+export function parseConfigText(text: string, fallbackLanguage: Language = "en"): Config {
+  return normalizeConfig(JSON.parse(text.replace(/^﻿/, "")), fallbackLanguage);
+}
+
 /** Turns anything read from disk or from the settings UI into a safe, complete Config. */
 export function normalizeConfig(raw: unknown, fallbackLanguage: Language = "en"): Config {
   const r = isObj(raw) ? raw : {};
@@ -88,6 +97,7 @@ export function normalizeConfig(raw: unknown, fallbackLanguage: Language = "en")
     minAgeDays: num(r.minAgeDays, 0, 0, 3650),
     protectedPatterns: Array.isArray(r.protectedPatterns) ? strings(r.protectedPatterns).map((p) => p.trim()).filter(Boolean) : d.protectedPatterns,
     robot: {
+      skin: SKIN_PREFERENCES.includes(robot.skin as SkinPreference) ? (robot.skin as SkinPreference) : d.robot.skin,
       speed: num(robot.speed, d.robot.speed, 40, 400),
       color: typeof robot.color === "string" && /^#[0-9a-f]{6}$/i.test(robot.color) ? robot.color : d.robot.color
     },

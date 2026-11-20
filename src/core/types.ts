@@ -1,5 +1,7 @@
 export type Language = "en" | "tr";
 export type Theme = "system" | "light" | "dark";
+/** "auto" picks the seasonal skin by date; the others force one skin. */
+export type SkinPreference = "auto" | "classic" | "winter";
 
 export interface Rule {
   /** Human readable rule name. */
@@ -21,6 +23,8 @@ export interface IconGrid {
 }
 
 export interface RobotSettings {
+  /** Which look the robot has (see src/shared/skins.ts). */
+  skin: SkinPreference;
   /** Cruise speed in px/s. */
   speed: number;
   /** Accent colour (#rrggbb) of the robot's lens. */

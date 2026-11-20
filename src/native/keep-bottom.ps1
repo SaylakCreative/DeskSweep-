@@ -3,7 +3,7 @@
 param([Int64]$Hwnd)
 $ErrorActionPreference = 'Stop'
 
-Add-Type -TypeDefinition @"
+$source = @"
 using System;
 using System.Runtime.InteropServices;
 public static class ZOrder {
@@ -11,6 +11,9 @@ public static class ZOrder {
   [DllImport("user32.dll")] public static extern bool IsWindow(IntPtr h);
 }
 "@
+
+. "$PSScriptRoot\import-cached.ps1"
+Import-CachedType 'ZOrder' $source
 
 $h = [IntPtr]$Hwnd
 # HWND_BOTTOM = 1; SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE

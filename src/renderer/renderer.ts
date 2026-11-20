@@ -7,6 +7,9 @@ interface SweepItem {
 }
 
 interface StartData {
+  /** Where the robot's charging dock is: it rolls out of it and returns to it. */
+  dock: { x: number; y: number };
+  skin: string;
   speed: number;
   color: string;
   dry: boolean;
@@ -29,11 +32,32 @@ interface Window {
   const dpr = window.devicePixelRatio || 1;
 
   const robot = { x: -80, y: 0, angle: 0 };
+  let skin: Skin = DeskSkins.get("classic");
+  let ambient: SkinAmbient | undefined;
   let bubble: { text: string; until: number } | undefined;
   const dust: { x: number; y: number; vx: number; vy: number; born: number }[] = [];
   const eating: { label: string; x: number; y: number; born: number }[] = [];
+  const confetti: { x: number; y: number; vx: number; vy: number; born: number; color: string; spin: number }[] = [];
+
+  function burstConfetti(x: number, y: number, colors: string[], now: number): void {
+    for (let i = 0; i < 16; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const speed = 60 + Math.random() * 110;
+      confetti.push({ x, y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed - 70, born: now, color: colors[i % colors.length], spin: Math.random() * 8 });
+    }
+  }
 
   const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+  /**
+   * requestAnimationFrame, with a timer as a safety net: if Chromium ever pauses animation frames
+   * (it does for windows it considers hidden), the sweep logic still moves on instead of freezing.
+   */
+  function nextFrame(cb: (now: number) => void): void {
+    let called = false;
+    requestAnimationFrame((now) => { if (!called) { called = true; cb(now); } });
+    setTimeout(() => { if (!called) { called = true; cb(performance.now()); } }, 80);
+  }
 
   function resize(width: number, height: number): void {
     canvas.width = width * dpr;
@@ -43,32 +67,56 @@ interface Window {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
+  let dock = { x: 80, y: 0 };
+  let sceneAlpha = 0; // the dock and robot fade in at the start and out at the end
+  let charging = false;
+
+  function drawDock(now: number): void {
+    ctx.save();
+    ctx.translate(dock.x, dock.y);
+    ctx.fillStyle = "#2b2d34"; ctx.strokeStyle = "#454852"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(-52, -44, 104, 88, 16); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#8a8f9c";                       // charging contacts
+    ctx.fillRect(-18, 34, 12, 4); ctx.fillRect(6, 34, 12, 4);
+    const glow = charging ? 0.55 + 0.45 * Math.sin(now / 160) : 0.25; // status LED
+    ctx.fillStyle = `rgba(62,207,142,${glow})`;
+    ctx.beginPath(); ctx.arc(38, -32, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function fade(to: number, ms: number): Promise<void> {
+    return new Promise((resolve) => {
+      const from = sceneAlpha;
+      const t0 = performance.now();
+      const step = (now: number) => {
+        const k = Math.min(1, (now - t0) / ms);
+        sceneAlpha = from + (to - from) * k;
+        if (k < 1) nextFrame(step); else resolve();
+      };
+      nextFrame(step);
+    });
+  }
+
   function drawRobot(now: number): void {
+    const state = { time: now, accent };
     ctx.save();
     ctx.translate(robot.x, robot.y);
     ctx.rotate(robot.angle);
-    // soft shadow
-    ctx.fillStyle = "rgba(0,0,0,0.25)";
-    ctx.beginPath(); ctx.ellipse(4, 8, 36, 32, 0, 0, Math.PI * 2); ctx.fill();
-    // spinning side brush
-    ctx.save();
-    ctx.translate(22, 22); ctx.rotate(now / 90);
-    ctx.strokeStyle = "#ff9a3c"; ctx.lineWidth = 3;
-    for (let i = 0; i < 3; i++) { ctx.rotate((Math.PI * 2) / 3); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(11, 0); ctx.stroke(); }
+    skin.drawBody(ctx, state);
     ctx.restore();
-    // body
-    ctx.fillStyle = "#f4f4f6"; ctx.strokeStyle = "#b9bcc4"; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(0, 0, 34, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    // lens
-    ctx.fillStyle = "#1a1a1f";
-    ctx.beginPath(); ctx.arc(8, 0, 11, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = accent;
-    ctx.beginPath(); ctx.arc(11, -3, 3, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
+    if (skin.drawOverlay) {
+      ctx.save();
+      ctx.translate(robot.x, robot.y);
+      skin.drawOverlay(ctx, state);
+      ctx.restore();
+    }
   }
 
   function frame(now: number): void {
     ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+    ambient?.draw(ctx, now);
+
+    ctx.save(); ctx.globalAlpha = sceneAlpha; drawDock(now); ctx.restore();
 
     for (let i = dust.length - 1; i >= 0; i--) {
       const p = dust[i];
@@ -78,22 +126,27 @@ interface Window {
       ctx.beginPath(); ctx.arc(p.x + p.vx * age * 20, p.y + p.vy * age * 20, 3 * (1 - age) + 1, 0, Math.PI * 2); ctx.fill();
     }
 
+    for (let i = confetti.length - 1; i >= 0; i--) {
+      const c = confetti[i];
+      const age = (now - c.born) / 1000;
+      if (age >= 1) { confetti.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = 1 - age;
+      ctx.translate(c.x + c.vx * age, c.y + c.vy * age + 220 * age * age);
+      ctx.rotate(c.spin * age);
+      ctx.fillStyle = c.color;
+      ctx.fillRect(-3, -1.5, 6, 3);
+      ctx.restore();
+    }
+
     for (let i = eating.length - 1; i >= 0; i--) {
       const e = eating[i];
       const k = (now - e.born) / 420;
       if (k >= 1) { eating.splice(i, 1); continue; }
-      const x = e.x + (robot.x - e.x) * k;
-      const y = e.y + (robot.y - e.y) * k;
-      ctx.save();
-      ctx.globalAlpha = 1 - k;
-      ctx.font = `${Math.max(8, 13 * (1 - k))}px Segoe UI, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillStyle = "#fff"; ctx.strokeStyle = "rgba(0,0,0,0.7)"; ctx.lineWidth = 3;
-      ctx.strokeText(e.label, x, y); ctx.fillText(e.label, x, y);
-      ctx.restore();
+      skin.drawEaten(ctx, e.label, e.x + (robot.x - e.x) * k, e.y + (robot.y - e.y) * k, k);
     }
 
-    drawRobot(now);
+    ctx.save(); ctx.globalAlpha = sceneAlpha; drawRobot(now); ctx.restore();
 
     if (bubble && now < bubble.until) {
       ctx.font = "bold 14px Segoe UI, sans-serif";
@@ -103,7 +156,7 @@ interface Window {
       ctx.fillStyle = "#222"; ctx.textAlign = "center";
       ctx.fillText(bubble.text, robot.x, robot.y - 49);
     }
-    requestAnimationFrame(frame);
+    nextFrame(frame);
   }
 
   /** Cruise speed in px/s and turn rate in rad/s: tuned to look like a real robot vacuum. */
@@ -123,9 +176,9 @@ interface Window {
         const k = Math.min(1, (now - t0) / dur);
         const e = k * k * (3 - 2 * k);
         robot.angle = start + diff * e;
-        if (k < 1) requestAnimationFrame(step); else resolve();
+        if (k < 1) nextFrame(step); else resolve();
       };
-      requestAnimationFrame(step);
+      nextFrame(step);
     });
   }
 
@@ -139,7 +192,10 @@ interface Window {
 
     const ramp = 0.18; // fraction of the trip spent accelerating / braking
     const v = 1 / (1 - ramp);
-    const dur = Math.max(400, (dist / SPEED) * 1000 * (1 + ramp / 2));
+    // Short hops between neighbouring icons keep the set speed; long legs (to and from the dock)
+    // cruise up to twice as fast so the user is not left waiting for the robot to cross the screen.
+    const cruise = SPEED * Math.min(2, 1 + dist / 1200);
+    const dur = Math.max(400, (dist / cruise) * 1000 * (1 + ramp / 2));
     const t0 = performance.now();
     await new Promise<void>((resolve) => {
       const step = (now: number) => {
@@ -151,9 +207,9 @@ interface Window {
         robot.y = sy + (ty - sy) * p;
         robot.angle = heading + Math.sin(now / 130) * 0.03;
         if (Math.random() < 0.5) dust.push({ x: robot.x - Math.cos(heading) * 30, y: robot.y - Math.sin(heading) * 30, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2, born: now });
-        if (k < 1) requestAnimationFrame(step); else resolve();
+        if (k < 1) nextFrame(step); else resolve();
       };
-      requestAnimationFrame(step);
+      nextFrame(step);
     });
   }
 
@@ -175,25 +231,44 @@ interface Window {
   }
 
   window.deskSweep.onStart(async (data) => {
+    console.log(`start received, visibility=${document.visibilityState}`);
     SPEED = data.speed;
     accent = data.color;
+    skin = DeskSkins.get(data.skin);
+    ambient = skin.createAmbient?.(data.width, data.height);
     resize(data.width, data.height);
-    robot.x = -80;
-    robot.y = data.height - 120;
-    requestAnimationFrame(frame);
+    dock = data.dock;
+    robot.x = dock.x;
+    robot.y = dock.y;
+    robot.angle = -Math.PI / 2; // parked facing up
+    sceneAlpha = 0;
+    nextFrame(frame);
+
+    // The robot is visible from the first moment: the dock fades in with it on top, "wakes up"
+    // for a beat, then rolls out.
+    await fade(1, 350);
+    charging = true;
+    await sleep(550);
+    charging = false;
 
     for (const item of order(data.items, robot)) {
       await moveTo(item.x, item.y);
       // Sweep the moment the robot is on top of the icon, then pause only briefly.
       const result = await window.deskSweep.sweep(item.id);
-      bubble = { text: result.ok ? (data.dry ? "would nom!" : "nom!") : "oops!", until: performance.now() + 700 };
-      if (result.ok) eating.push({ label: item.name, x: item.x, y: item.y + 30, born: performance.now() });
+      const at = performance.now();
+      bubble = { text: result.ok ? (data.dry ? skin.bubbles.dryEat : skin.bubbles.eat) : skin.bubbles.oops, until: at + 700 };
+      if (result.ok) {
+        eating.push({ label: item.name, x: item.x, y: item.y + 30, born: at });
+        if (skin.confetti) burstConfetti(item.x, item.y, skin.confetti, at);
+      }
       await sleep(250);
     }
 
-    bubble = { text: data.dry ? "preview done" : "all clean!", until: performance.now() + 1800 };
-    await sleep(1500);
-    await moveTo(data.width + 100, data.height - 120);
+    bubble = { text: data.dry ? skin.bubbles.dryDone : skin.bubbles.done, until: performance.now() + 1800 };
+    await moveTo(dock.x, dock.y); // back home: the message stays up while it drives
+    charging = true;
+    await sleep(700);
+    await fade(0, 400);
     window.deskSweep.finish();
   });
 })();

@@ -4,7 +4,7 @@
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
 
-Add-Type -TypeDefinition @"
+$source = @"
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -97,5 +97,8 @@ public static class DeskIcons {
   }
 }
 "@
+
+. "$PSScriptRoot\import-cached.ps1"
+Import-CachedType 'DeskIcons' $source
 
 [Console]::Out.Write([DeskIcons]::Dump())

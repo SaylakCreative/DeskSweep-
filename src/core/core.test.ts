@@ -3,11 +3,12 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
 import { classify, globToRegExp, isProtected } from "./classifier";
-import { defaultConfig, normalizeConfig } from "./config";
-import { t } from "./i18n";
+import { defaultConfig, normalizeConfig, parseConfigText } from "./config";
+import { strings, t } from "./i18n";
+import { isWinterSeason, resolveSkin } from "./skins";
 import { matchIcons, parseIconDump } from "./iconMatch";
 import { Journal, applyMove } from "./journal";
-import { estimateIconPositions } from "./layout";
+import { estimateIconPositions, pickDockSpot } from "./layout";
 import { buildPlan, sanitizeSegment } from "./planner";
 import type { Config, Entry } from "./types";
 
@@ -78,7 +79,7 @@ describe("planner", () => {
 describe("normalizeConfig", () => {
   it("fills defaults and clamps values", () => {
     const cfg = normalizeConfig({ robot: { speed: 99999, color: "red" }, minAgeDays: -3 });
-    expect(cfg.robot).toEqual({ speed: 400, color: defaultConfig.robot.color });
+    expect(cfg.robot).toEqual({ skin: "auto", speed: 400, color: defaultConfig.robot.color });
     expect(cfg.minAgeDays).toBe(0);
     expect(cfg.rules.length).toBe(defaultConfig.rules.length);
   });
@@ -115,6 +116,19 @@ describe("icon matching", () => {
   });
 });
 
+describe("config file text", () => {
+  it("accepts a UTF-8 BOM (saved by some editors) without losing settings", () => {
+    const cfg = parseConfigText('﻿{"robot":{"speed":300,"skin":"winter"},"language":"tr"}');
+    expect(cfg.robot.speed).toBe(300);
+    expect(cfg.robot.skin).toBe("winter");
+    expect(cfg.language).toBe("tr");
+  });
+
+  it("still rejects text that is not JSON", () => {
+    expect(() => parseConfigText("not json")).toThrow();
+  });
+});
+
 describe("automation config", () => {
   it("validates schedule and clamps hours", () => {
     expect(normalizeConfig({ schedule: { mode: "interval", hours: 9999 } }).schedule).toEqual({ mode: "interval", hours: 168 });
@@ -123,7 +137,36 @@ describe("automation config", () => {
   });
 });
 
+describe("skins", () => {
+  it("winter season runs from 15 December to 5 January", () => {
+    const d = (m: number, day: number) => new Date(2026, m, day);
+    expect(isWinterSeason(d(11, 14))).toBe(false);
+    expect(isWinterSeason(d(11, 15))).toBe(true);
+    expect(isWinterSeason(d(11, 31))).toBe(true);
+    expect(isWinterSeason(d(0, 1))).toBe(true);
+    expect(isWinterSeason(d(0, 5))).toBe(true);
+    expect(isWinterSeason(d(0, 6))).toBe(false);
+    expect(isWinterSeason(d(6, 10))).toBe(false);
+  });
+
+  it("auto follows the season, explicit choices always win", () => {
+    expect(resolveSkin("auto", new Date(2026, 11, 25))).toBe("winter");
+    expect(resolveSkin("auto", new Date(2026, 5, 1))).toBe("classic");
+    expect(resolveSkin("classic", new Date(2026, 11, 25))).toBe("classic");
+    expect(resolveSkin("winter", new Date(2026, 5, 1))).toBe("winter");
+  });
+
+  it("config accepts only known skins", () => {
+    expect(normalizeConfig({ robot: { skin: "winter" } }).robot.skin).toBe("winter");
+    expect(normalizeConfig({ robot: { skin: "disco" } }).robot.skin).toBe("auto");
+  });
+});
+
 describe("i18n", () => {
+  it("English and Turkish define exactly the same keys", () => {
+    expect(Object.keys(strings.tr).sort()).toEqual(Object.keys(strings.en).sort());
+  });
+
   it("translates and interpolates", () => {
     expect(t("tr", "restored", { n: 3 })).toBe("3 öğe geri yüklendi.");
     expect(t("en", "restored", { n: 3 })).toBe("Restored 3 item(s).");
@@ -177,6 +220,23 @@ describe("journal", () => {
     expect(() => applyMove({ from: a, to: b })).toThrow();
     expect(fs.readFileSync(b, "utf8")).toBe("2");
     fs.rmSync(root, { recursive: true, force: true });
+  });
+});
+
+describe("dock placement", () => {
+  const area = { x: 0, y: 0, width: 1000, height: 600 };
+
+  it("prefers the bottom-left corner when it is free", () => {
+    expect(pickDockSpot(area, [{ x: 500, y: 100 }])).toEqual({ x: 80, y: 530 });
+    expect(pickDockSpot(area, [])).toEqual({ x: 80, y: 530 });
+  });
+
+  it("moves away from icons crowding the corner", () => {
+    const icons = [{ x: 60, y: 520 }, { x: 140, y: 500 }];
+    const spot = pickDockSpot(area, icons);
+    expect(spot).not.toEqual({ x: 80, y: 530 });
+    // whichever corner wins, the dock keeps well clear of every icon
+    for (const icon of icons) expect(Math.hypot(icon.x - spot.x, icon.y - spot.y)).toBeGreaterThan(300);
   });
 });
 

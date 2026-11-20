@@ -16,6 +16,14 @@ Fikir, internette dolaşan bir "masaüstü robot süpürgesi" demosundan esinlen
 
 <p align="center"><sub>Demo, sahte bir masaüstünde gerçek robot animasyonuyla kaydedildi.</sub></p>
 
+### 🎄 Kış / Yılbaşı görünümü
+
+Robot Noel Baba şapkası takar, kar yağar ve süpürdüğü dosyalar hediye paketine dönüşür. Ayarlar → Robot → Görünüm'den seçilir; **Mevsimlik** seçeneği 15 Aralık – 5 Ocak arasında kendiliğinden devreye girer.
+
+<p align="center">
+  <img src="docs/images/demo-winter.gif" alt="Kış görünümlü DeskSweep robotu" width="720">
+</p>
+
 ## Ekran görüntüleri
 
 | Temizlik kuralları (koyu) | Temizlik kuralları (açık) |
@@ -37,6 +45,7 @@ Fikir, internette dolaşan bir "masaüstü robot süpürgesi" demosundan esinlen
 | Hangi türlerin (müzik, görsel, video, belge, klasör...) süpürüleceğini ve uzantılarını seçme, özel tür ekleme | ✅ |
 | **Yedek konumunu kullanıcı seçer**: herhangi bir klasör/sürücü (varsayılan `Masaüstü\DeskSweep`) | ✅ |
 | Robot hızı ve renk ayarı | ✅ |
+| **Görünüm (skin) sistemi**: Klasik ve Kış/Yılbaşı görünümü, mevsimlik otomatik geçiş, canlı önizleme (v0.2.0'da yayınlanacak) | ✅ |
 | **Asla silmez**: öğeler `<Yedek konumu>\<Kategori>` altına taşınır | ✅ |
 | Her taşıma anında günlüğe yazılır → tray veya arayüzden **Undo** (çökme olsa bile geri alınır) | ✅ |
 | Dry-run (önizleme) modu | ✅ |

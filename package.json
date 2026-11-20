@@ -60,6 +60,7 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "multiLanguageInstaller": true,
+      "displayLanguageSelector": true,
       "installerLanguages": ["en_US", "tr_TR"],
       "license": "LICENSE"
     }

@@ -5,6 +5,38 @@ export interface Point {
   y: number;
 }
 
+export interface Area {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Picks where the robot's charging dock goes: the bottom-left corner of the usable area unless an
+ * icon is closer there than at another spot (bottom-right, bottom-centre, top-right), so the dock
+ * does not hide icons while the robot works.
+ */
+export function pickDockSpot(area: Area, obstacles: Point[]): Point {
+  const margin = 80;
+  const lift = 70;
+  const bottom = area.y + area.height - lift;
+  const candidates: Point[] = [
+    { x: area.x + margin, y: bottom },
+    { x: area.x + area.width - margin, y: bottom },
+    { x: area.x + area.width / 2, y: bottom },
+    { x: area.x + area.width - margin, y: area.y + lift }
+  ];
+
+  let best = candidates[0];
+  let bestClearance = -1;
+  for (const c of candidates) {
+    const clearance = obstacles.length ? Math.min(...obstacles.map((o) => Math.hypot(o.x - c.x, o.y - c.y))) : Infinity;
+    if (clearance > bestClearance) { best = c; bestClearance = clearance; }
+  }
+  return best;
+}
+
 /**
  * Estimates where Explorer draws each desktop icon (default "sort by name",
  * column-major, folders first). It is an approximation: a native helper that
