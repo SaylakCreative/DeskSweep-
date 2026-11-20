@@ -30,7 +30,7 @@ A little robot rolls over your desktop icons and sweeps the files you chose into
 
 Download `DeskSweep-Setup-x.y.z.exe` from [Releases](https://github.com/saylakcreativve/DeskSweep-/releases). The wizard is available in English and Turkish and installs per-user, no admin rights needed.
 
-> The installer is not code-signed, so Windows SmartScreen may warn about an unrecognised app: **More info → Run anyway**.
+> The installer is not code-signed yet (see the [Code signing policy](CODE_SIGNING_POLICY.md); an application to the SignPath Foundation program is in progress), so Windows SmartScreen may warn about an unrecognised app: **More info → Run anyway**.
 
 ## Run from source
 
