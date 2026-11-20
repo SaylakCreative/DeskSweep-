@@ -8,7 +8,7 @@ An open-source robot vacuum that tidies your Windows desktop. 🇹🇷 [Türkçe
 
 A little robot rolls over your desktop icons and sweeps the files you chose into a backup folder. **Nothing is ever deleted and every sweep can be undone.**
 
-> **Beta (v0.1):** DeskSweep moves files around. It never deletes anything and every sweep is undoable, but please run **Preview (dry run)** first. Found a bug? [Open an issue](https://github.com/saylakcreativve/DeskSweep-/issues).
+> **Beta (v0.1):** DeskSweep moves files around. It never deletes anything and every sweep is undoable, but please run **Preview (dry run)** first. Found a bug? [Open an issue](https://github.com/SaylakCreative/DeskSweep-/issues).
 
 <p align="center">
   <img src="docs/images/demo.gif" alt="DeskSweep robot sweeping desktop files" width="720">
@@ -28,7 +28,7 @@ A little robot rolls over your desktop icons and sweeps the files you chose into
 
 ## Install
 
-Download `DeskSweep-Setup-x.y.z.exe` from [Releases](https://github.com/saylakcreativve/DeskSweep-/releases). The wizard is available in English and Turkish and installs per-user, no admin rights needed.
+Download `DeskSweep-Setup-x.y.z.exe` from [Releases](https://github.com/SaylakCreative/DeskSweep-/releases). The wizard is available in English and Turkish and installs per-user, no admin rights needed.
 
 > The installer is not code-signed yet (see the [Code signing policy](CODE_SIGNING_POLICY.md); an application to the SignPath Foundation program is in progress), so Windows SmartScreen may warn about an unrecognised app: **More info → Run anyway**.
 

@@ -8,7 +8,7 @@ Masaüstünü temizleyen açık kaynaklı robot süpürge. 🇬🇧 [English REA
 
 Fikir, internette dolaşan bir "masaüstü robot süpürgesi" demosundan esinlendi; kod sıfırdan yazıldı, o projeden kod alınmadı.
 
-> **Beta (v0.1):** DeskSweep dosya taşıyan bir araçtır. Hiçbir şeyi silmez ve her süpürme geri alınabilir, ama ilk kullanımda önce **Önizleme (dry run)** ile ne yapacağına bakmanı öneririz. Hata bulursan [issue aç](https://github.com/saylakcreativve/DeskSweep-/issues).
+> **Beta (v0.1):** DeskSweep dosya taşıyan bir araçtır. Hiçbir şeyi silmez ve her süpürme geri alınabilir, ama ilk kullanımda önce **Önizleme (dry run)** ile ne yapacağına bakmanı öneririz. Hata bulursan [issue aç](https://github.com/SaylakCreative/DeskSweep-/issues).
 
 <p align="center">
   <img src="docs/images/demo.gif" alt="DeskSweep robotu masaüstündeki dosyaları süpürüyor" width="720">
@@ -56,7 +56,7 @@ Fikir, internette dolaşan bir "masaüstü robot süpürgesi" demosundan esinlen
 
 ## Kurulum
 
-[Releases](https://github.com/saylakcreativve/DeskSweep-/releases) sayfasından `DeskSweep-Setup-x.y.z.exe` dosyasını indirip çalıştır. Sihirbaz Türkçe ve İngilizce destekler, kurulum kullanıcı bazlıdır, yönetici izni gerekmez.
+[Releases](https://github.com/SaylakCreative/DeskSweep-/releases) sayfasından `DeskSweep-Setup-x.y.z.exe` dosyasını indirip çalıştır. Sihirbaz Türkçe ve İngilizce destekler, kurulum kullanıcı bazlıdır, yönetici izni gerekmez.
 
 > Kurulum dosyası şu an kod imzalı değildir ([Code signing policy](CODE_SIGNING_POLICY.md): imza için SignPath Foundation programına başvuru sürecindedir); Windows SmartScreen "tanınmayan uygulama" uyarısı gösterebilir. **Ek bilgi → Yine de çalıştır** ile devam edebilirsin. Güvenmek istemezsen kaynağı okuyup kendin derleyebilirsin (aşağıda).
 

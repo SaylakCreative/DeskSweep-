@@ -6,11 +6,11 @@
   "author": "DeskSweep contributors",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/saylakcreativve/DeskSweep-.git"
+    "url": "git+https://github.com/SaylakCreative/DeskSweep-.git"
   },
-  "homepage": "https://github.com/saylakcreativve/DeskSweep-#readme",
+  "homepage": "https://github.com/SaylakCreative/DeskSweep-#readme",
   "bugs": {
-    "url": "https://github.com/saylakcreativve/DeskSweep-/issues"
+    "url": "https://github.com/SaylakCreative/DeskSweep-/issues"
   },
   "engines": {
     "node": ">=20"

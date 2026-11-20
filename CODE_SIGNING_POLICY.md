@@ -8,7 +8,7 @@ DeskSweep is free and open source (MIT). This page describes how its Windows ins
 
 - Installers are built only by the GitHub Actions workflow [`release.yml`](.github/workflows/release.yml), from the tagged source in this repository. Nothing is built or signed on a developer machine.
 - The workflow uploads the unsigned installer and submits it to SignPath for signing. A signing request is **approved manually** by an approver before it is signed.
-- The signed installer is then attached to the matching [GitHub release](https://github.com/saylakcreativve/DeskSweep-/releases). Product name and version in the installer metadata come from `package.json`.
+- The signed installer is then attached to the matching [GitHub release](https://github.com/SaylakCreative/DeskSweep-/releases). Product name and version in the installer metadata come from `package.json`.
 
 ## Team roles
 
@@ -16,9 +16,9 @@ DeskSweep currently has a single maintainer, who holds all roles. This list is u
 
 | Role | Responsibility | Members |
 |---|---|---|
-| **Authors** | Trusted to change the source code without additional review | [saylakcreativve](https://github.com/saylakcreativve) |
-| **Reviewers** | Review every change from non-committers (pull requests) | [saylakcreativve](https://github.com/saylakcreativve) |
-| **Approvers** | Approve each signing request, i.e. decide whether a release may be signed | [saylakcreativve](https://github.com/saylakcreativve) |
+| **Authors** | Trusted to change the source code without additional review | [SaylakCreative](https://github.com/SaylakCreative) |
+| **Reviewers** | Review every change from non-committers (pull requests) | [SaylakCreative](https://github.com/SaylakCreative) |
+| **Approvers** | Approve each signing request, i.e. decide whether a release may be signed | [SaylakCreative](https://github.com/SaylakCreative) |
 
 All team members use multi-factor authentication on GitHub and SignPath.
 
@@ -30,4 +30,4 @@ DeskSweep contains no telemetry, analytics, crash reporting or automatic update 
 
 ## Reporting problems
 
-If you believe a signed DeskSweep build is malicious or violates this policy, please [open an issue](https://github.com/saylakcreativve/DeskSweep-/issues).
+If you believe a signed DeskSweep build is malicious or violates this policy, please [open an issue](https://github.com/SaylakCreative/DeskSweep-/issues).
