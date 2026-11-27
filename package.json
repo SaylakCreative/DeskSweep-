@@ -1,6 +1,6 @@
 {
   "name": "desksweep",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An open-source robot vacuum that tidies your desktop. Safe by design: nothing is ever deleted, every sweep can be undone.",
   "license": "MIT",
   "author": "DeskSweep contributors",
@@ -24,8 +24,8 @@
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "capture": "npm run build && electron scripts/capture/capture.cjs",
-    "pack": "npm run build && electron-builder --win --dir",
-    "dist": "npm run build && electron-builder --win nsis"
+    "pack": "npm run build && electron-builder --win --dir --publish never",
+    "dist": "npm run build && electron-builder --win nsis --publish never"
   },
   "keywords": [
     "desktop",
@@ -40,6 +40,13 @@
     "directories": {
       "output": "release"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "SaylakCreative",
+        "repo": "DeskSweep-"
+      }
+    ],
     "files": [
       "dist/**/*",
       "build/icon.ico",
@@ -61,7 +68,10 @@
       "allowToChangeInstallationDirectory": true,
       "multiLanguageInstaller": true,
       "displayLanguageSelector": true,
-      "installerLanguages": ["en_US", "tr_TR"],
+      "installerLanguages": [
+        "en_US",
+        "tr_TR"
+      ],
       "license": "LICENSE"
     }
   },
@@ -72,6 +82,8 @@
     "gifenc": "^1.0.3",
     "typescript": "^7.0.2",
     "vitest": "^5.1.1"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
   }
 }
-

@@ -6,6 +6,8 @@ import { classify, globToRegExp, isProtected } from "./classifier";
 import { defaultConfig, normalizeConfig, parseConfigText } from "./config";
 import { strings, t } from "./i18n";
 import { isWinterSeason, resolveSkin } from "./skins";
+import { launchDetached } from "./launch";
+import { localFeedOverride } from "./updates";
 import { matchIcons, parseIconDump } from "./iconMatch";
 import { Journal, applyMove } from "./journal";
 import { estimateIconPositions, pickDockSpot } from "./layout";
@@ -126,6 +128,41 @@ describe("config file text", () => {
 
   it("still rejects text that is not JSON", () => {
     expect(() => parseConfigText("not json")).toThrow();
+  });
+});
+
+describe("starting the installer", () => {
+  const node = process.execPath;
+
+  it("reports true for a program that keeps running (a healthy installer)", async () => {
+    expect(await launchDetached(node, ["-e", "setTimeout(() => {}, 3000)"], 500)).toBe(true);
+  });
+
+  it("reports false for a program that is gone at once (blocked or crashed installer)", async () => {
+    expect(await launchDetached(node, ["-e", "process.exit(1)"], 1500)).toBe(false);
+  });
+
+  it("reports false when the file cannot be started at all", async () => {
+    expect(await launchDetached("C:\\no\\such\\installer.exe", [], 300)).toBe(false);
+  });
+});
+
+describe("update settings", () => {
+  it("checks for updates unless the user switched it off", () => {
+    expect(normalizeConfig({}).updates.check).toBe(true);
+    expect(normalizeConfig({ updates: {} }).updates.check).toBe(true);
+    expect(normalizeConfig({ updates: { check: "no" } }).updates.check).toBe(true);
+    expect(normalizeConfig({ updates: { check: false } }).updates.check).toBe(false);
+  });
+
+  it("only lets tests redirect the update feed to this computer", () => {
+    expect(localFeedOverride("http://127.0.0.1:8123/")).toBe("http://127.0.0.1:8123/");
+    expect(localFeedOverride("http://localhost:8123/feed")).toBe("http://localhost:8123/feed");
+    expect(localFeedOverride("https://evil.example.com/")).toBeUndefined();
+    expect(localFeedOverride("http://127.0.0.1.evil.example.com/")).toBeUndefined();
+    expect(localFeedOverride("file:///C:/feed")).toBeUndefined();
+    expect(localFeedOverride("not a url")).toBeUndefined();
+    expect(localFeedOverride(undefined)).toBeUndefined();
   });
 });
 

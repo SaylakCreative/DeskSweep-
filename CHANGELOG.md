@@ -2,9 +2,10 @@
 
 All notable changes to DeskSweep. Versions below 1.0 are betas.
 
-## [Unreleased] — v0.2.0
+## [0.2.0] — 2026-11-27
 
 ### Added
+- **Updates inside the app.** About 20 seconds after start and once a day DeskSweep checks GitHub for a new release. If there is one it asks first; on **Install** it downloads it, verifies its SHA-512 checksum and installs it silently, then restarts. Switch it off or check by hand in Settings → General → Updates, or from the tray. If Windows refuses to start the installer (Smart App Control), DeskSweep keeps running and offers the download page instead.
 - **Skin system.** The robot's look is now a swappable "skin" (`src/shared/skins.ts`), shared by the desktop overlay and the settings preview. Adding a skin is one object, no engine changes.
 - **Winter / New Year skin.** Santa hat, falling snow, sweeps turn files into little gift boxes with a burst of confetti, and the robot says "ho ho ho!".
 - **Look setting** (Settings → Robot): *Seasonal*, *Classic* or *Winter*, with a live animated preview. *Seasonal* (the default) switches to Winter from 15 December to 5 January.
@@ -19,6 +20,7 @@ All notable changes to DeskSweep. Versions below 1.0 are betas.
 
 ### Fixed
 - **A sweep could freeze when an app covered the whole desktop.** Chromium paused the animation of a fully covered window, so nothing was swept. The overlay now keeps running while covered, and the sweep logic no longer depends on animation frames.
+- **The privacy policy no longer claims DeskSweep never connects to the network**: the update check (GitHub only, can be switched off) is now described in detail.
 - **A `config.json` saved with a UTF-8 BOM** (older Notepad, some scripts) was treated as invalid and all settings were silently reset. BOMs are now accepted.
 
 ## [0.1.0] — 2026-11-19

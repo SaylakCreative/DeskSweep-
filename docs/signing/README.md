@@ -1,5 +1,7 @@
 # Code signing setup (maintainers)
 
+> **Status: dormant.** The SignPath Foundation application was declined (November 2026), so releases are currently unsigned and the `sign` job in `release.yml` is skipped. This guide is kept for when a certificate becomes available. Note: a signed installer changes its SHA-512, so `latest.yml` must be regenerated after signing or the in-app updater will reject the download.
+
 DeskSweep uses the free [SignPath Foundation](https://signpath.org) open source program. See the public [code signing policy](../../CODE_SIGNING_POLICY.md).
 
 ## One-time setup, after SignPath approves the project

@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld("settingsApi", {
   save: (config: unknown) => ipcRenderer.invoke("settings:save", config),
   pickFolder: (): Promise<string | undefined> => ipcRenderer.invoke("settings:pickFolder"),
   openDestination: (dir: string) => ipcRenderer.invoke("settings:openDestination", dir),
+  checkUpdates: () => ipcRenderer.invoke("settings:checkUpdates"),
   setTheme: (theme: string) => ipcRenderer.send("settings:theme", theme),
   run: (dry: boolean) => ipcRenderer.send("settings:run", dry),
   undo: (): Promise<string> => ipcRenderer.invoke("settings:undo")

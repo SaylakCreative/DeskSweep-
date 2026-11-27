@@ -10,6 +10,7 @@ interface CfgShape {
   language: "en" | "tr";
   theme: "system" | "light" | "dark";
   startWithWindows: boolean;
+  updates: { check: boolean };
   schedule: { mode: "off" | "startup" | "interval"; hours: number };
   destinationDir: string;
   sweepFolders: boolean;
@@ -24,6 +25,7 @@ interface SettingsBootstrap {
   strings: Record<"en" | "tr", Record<string, string>>;
   builtinCategories: string[];
   isPackaged: boolean;
+  version: string;
   resolvedSkin: string;
   defaultDestination: string;
 }
@@ -35,6 +37,7 @@ interface Window {
     pickFolder(): Promise<string | undefined>;
     openDestination(dir: string): Promise<void>;
     setTheme(theme: string): void;
+    checkUpdates(): Promise<{ state: "disabled" | "upToDate" | "available" | "error"; version?: string }>;
     run(dry: boolean): void;
     undo(): Promise<string>;
   };
@@ -388,7 +391,34 @@ interface Window {
     return el("div", {}, head(t("general"), t("generalHint")),
       el("div", { className: "stack" },
         el("div", { className: "card" }, el("h3", { textContent: t("language") }), language),
-        el("div", { className: "card" }, el("h3", { textContent: t("theme") }), theme)));
+        el("div", { className: "card" }, el("h3", { textContent: t("theme") }), theme),
+        updatesCard()));
+  }
+
+  function updatesCard(): HTMLElement {
+    const result = el("span", { className: "sub", textContent: t("versionLabel").replace("{v}", boot.version) });
+
+    const auto = switchEl(cfg.updates.check, (v) => { cfg.updates.check = v; markDirty(); });
+    const check = el("button", { className: "btn", type: "button", textContent: t("updatesCheckNow") });
+    check.onclick = async () => {
+      check.disabled = true;
+      result.textContent = t("updatesChecking");
+      const status = await api.checkUpdates();
+      check.disabled = false;
+      result.textContent =
+        status.state === "disabled" ? t("updatesDev")
+        : status.state === "error" ? t("updatesError")
+        : status.state === "available" ? t("updatesAvailable").replace("{v}", status.version ?? "")
+        : t("updatesUpToDate").replace("{v}", boot.version);
+    };
+
+    return el("div", { className: "card" },
+      el("div", { className: "card-top" },
+        el("div", { className: "tile" }, icon("check")),
+        el("div", { className: "title", textContent: t("updatesAuto") }),
+        auto),
+      el("p", { className: "sub", textContent: t("updatesHint") }),
+      el("div", { className: "row spaced" }, check, result));
   }
 
   /* ---------- shell ---------- */

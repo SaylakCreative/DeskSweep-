@@ -18,7 +18,8 @@ async function settingsShots() {
     { file: "settings-clean-light.png", theme: "light", page: 0, cfg: {} },
     { file: "settings-backup-dark.png", theme: "dark", page: 1, cfg: { destinationDir: "D:\\Backups\\Desktop" } },
     { file: "settings-robot-dark.png", theme: "dark", page: 2, cfg: { robot: { skin: "classic", speed: 150, color: "#6ea8ff" } } },
-    { file: "settings-robot-winter.png", theme: "dark", page: 2, cfg: { robot: { skin: "winter", speed: 150, color: "#6ea8ff" } } }
+    { file: "settings-robot-winter.png", theme: "dark", page: 2, cfg: { robot: { skin: "winter", speed: 150, color: "#6ea8ff" } } },
+    { file: "settings-general-dark.png", theme: "dark", page: 5, cfg: {} }
   ];
   for (const s of shots) {
     nativeTheme.themeSource = s.theme;
@@ -101,7 +102,9 @@ app.on("window-all-closed", () => {});
 app.whenReady().then(async () => {
   fs.mkdirSync(out, { recursive: true });
   await settingsShots();
-  await recordDemo("demo.gif", "classic");
-  await recordDemo("demo-winter.gif", "winter");
+  if (!process.env.CAPTURE_SKIP_DEMO) {
+    await recordDemo("demo.gif", "classic");
+    await recordDemo("demo-winter.gif", "winter");
+  }
   app.quit();
 });

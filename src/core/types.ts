@@ -31,6 +31,14 @@ export interface RobotSettings {
   color: string;
 }
 
+export interface UpdateSettings {
+  /**
+   * Look for a new version on GitHub once a day. This is the only network access DeskSweep
+   * has; nothing is downloaded or installed without the user's confirmation.
+   */
+  check: boolean;
+}
+
 export type ScheduleMode = "off" | "startup" | "interval";
 
 export interface Schedule {
@@ -45,6 +53,7 @@ export interface Config {
   /** Launch DeskSweep (tray only) when you sign in to Windows. Installed builds only. */
   startWithWindows: boolean;
   schedule: Schedule;
+  updates: UpdateSettings;
   /**
    * Absolute path of the backup folder that receives swept items.
    * Empty string means "<Desktop>\DeskSweep".

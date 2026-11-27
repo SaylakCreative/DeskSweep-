@@ -42,11 +42,16 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: installer-unsigned
-          path: release/DeskSweep-Setup-*.exe
+          # latest.yml (version + sha512) and the blockmap are what the in-app updater reads.
+          path: |
+            release/DeskSweep-Setup-*.exe
+            release/DeskSweep-Setup-*.exe.blockmap
+            release/latest.yml
           if-no-files-found: error
 
-  # Runs only after the SignPath application is approved and the repository variable
-  # SIGNPATH_ENABLED is set to "true" (see docs/signing/README.md).
+  # Dormant: the SignPath application was declined, so SIGNPATH_ENABLED is not set and this job
+  # is skipped. If signing is ever enabled (SignPath or another certificate), latest.yml must be
+  # regenerated for the signed installer, otherwise the in-app updater rejects it (sha512 mismatch).
   sign:
     needs: build
     if: vars.SIGNPATH_ENABLED == 'true'
@@ -98,7 +103,8 @@ jobs:
         run: |
           flags=""
           case "$GITHUB_REF_NAME" in v0.*) flags="--prerelease" ;; esac   # 0.x = beta
-          gh release create "$GITHUB_REF_NAME" installer/*.exe \
+          # the installer plus latest.yml and the blockmap (the in-app updater needs all three)
+          gh release create "$GITHUB_REF_NAME" installer/* \
             --repo "$GITHUB_REPOSITORY" \
             --title "DeskSweep $GITHUB_REF_NAME" \
             --generate-notes $flags

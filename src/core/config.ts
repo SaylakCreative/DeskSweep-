@@ -10,6 +10,7 @@ export const defaultConfig: Config = {
   theme: "dark",
   startWithWindows: false,
   schedule: { mode: "off", hours: 24 },
+  updates: { check: true },
   destinationDir: "",
   sweepFolders: false,
   minAgeDays: 0,
@@ -88,6 +89,7 @@ export function normalizeConfig(raw: unknown, fallbackLanguage: Language = "en")
     language: r.language === "tr" || r.language === "en" ? r.language : fallbackLanguage,
     theme: r.theme === "light" || r.theme === "dark" || r.theme === "system" ? r.theme : d.theme,
     startWithWindows: r.startWithWindows === true,
+    updates: { check: isObj(r.updates) && r.updates.check === false ? false : true },
     schedule: {
       mode: sched.mode === "startup" || sched.mode === "interval" ? sched.mode : "off",
       hours: Math.round(num(sched.hours, d.schedule.hours, 1, 168))

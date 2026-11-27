@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld("settingsApi", {
     strings,
     builtinCategories: BUILTIN_CATEGORIES,
     isPackaged: true,
+    version: "0.2.0",
     resolvedSkin: config.robot.skin === "winter" ? "winter" : "classic",
     defaultDestination: "C:\\Users\\you\\Desktop\\DeskSweep"
   }),
@@ -22,6 +23,7 @@ contextBridge.exposeInMainWorld("settingsApi", {
   pickFolder: async () => undefined,
   openDestination: async () => {},
   setTheme: () => {},
+  checkUpdates: async () => ({ state: "upToDate" }),
   run: () => {},
   undo: async () => ""
 });

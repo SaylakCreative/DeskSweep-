@@ -18,7 +18,7 @@ A little robot rolls over your desktop icons and sweeps the files you chose into
 
 ### 🎄 Winter / New Year look
 
-The robot wears a Santa hat, it snows, and swept files turn into gift boxes. Pick it under Settings → Robot → Look; **Seasonal** switches to it automatically from 15 December to 5 January. (Coming in v0.2.0.)
+The robot wears a Santa hat, it snows, and swept files turn into gift boxes. Pick it under Settings → Robot → Look; **Seasonal** switches to it automatically from 15 December to 5 January.
 
 <p align="center">
   <img src="docs/images/demo-winter.gif" alt="DeskSweep robot with the winter look" width="720">
@@ -33,12 +33,17 @@ The robot wears a Santa hat, it snows, and swept files turn into gift boxes. Pic
 - English / Türkçe UI, dark / light / system theme, robot speed and colour.
 - Automation: start with Windows, sweep at startup or every N hours.
 - Closing the window keeps DeskSweep in the system tray.
+- **Updates in the app**: when a new version is out, DeskSweep asks, then downloads, verifies and installs it (can be switched off).
 
 ## Install
 
 Download `DeskSweep-Setup-x.y.z.exe` from [Releases](https://github.com/SaylakCreative/DeskSweep-/releases). The wizard is available in English and Turkish and installs per-user, no admin rights needed.
 
-> The installer is not code-signed yet (see the [Code signing policy](CODE_SIGNING_POLICY.md); an application to the SignPath Foundation program is in progress), so Windows SmartScreen may warn about an unrecognised app: **More info → Run anyway**.
+> **The installer is not code-signed** ([details](CODE_SIGNING_POLICY.md)).
+> - **SmartScreen** may warn about an unrecognised app: **More info → Run anyway**.
+> - If Windows 11 **Smart App Control** is on, Windows blocks the file outright ("an Application Control policy has blocked this file") with no way to run it anyway. Either switch Smart App Control off in *Windows Security → App & browser control* (turning it back on can require resetting Windows, depending on your version), or run DeskSweep **from source** as shown below.
+>
+> Once installed, new versions arrive in the app: DeskSweep asks when one is available, and on **Install** downloads it, checks its SHA-512 checksum and updates itself.
 
 ## Run from source
 
@@ -53,7 +58,7 @@ npm run dist      # Windows installer in release\
 ```
 ## Privacy
 
-DeskSweep collects no data and makes no network connections. Details: [PRIVACY.md](PRIVACY.md).
+DeskSweep collects no data. Its only network access is the optional update check: once a day it asks github.com whether a new version exists (switch it off in Settings → General). Details: [PRIVACY.md](PRIVACY.md).
 
 ## Known limits
 
@@ -61,6 +66,7 @@ DeskSweep collects no data and makes no network connections. Details: [PRIVACY.m
 - The robot roams the primary monitor; icons on other monitors send it to the nearest edge.
 - If the backup folder is on another drive, items are copied, verified, and only then removed from the desktop.
 - "Start with Windows" only works in the installed build.
+- The installer is **not code-signed**; with Windows 11 Smart App Control switched on it cannot be run (see Install).
 
 ## Contributing
 

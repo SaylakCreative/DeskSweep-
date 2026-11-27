@@ -45,7 +45,8 @@ Robot Noel Baba şapkası takar, kar yağar ve süpürdüğü dosyalar hediye pa
 | Hangi türlerin (müzik, görsel, video, belge, klasör...) süpürüleceğini ve uzantılarını seçme, özel tür ekleme | ✅ |
 | **Yedek konumunu kullanıcı seçer**: herhangi bir klasör/sürücü (varsayılan `Masaüstü\DeskSweep`) | ✅ |
 | Robot hızı ve renk ayarı | ✅ |
-| **Görünüm (skin) sistemi**: Klasik ve Kış/Yılbaşı görünümü, mevsimlik otomatik geçiş, canlı önizleme (v0.2.0'da yayınlanacak) | ✅ |
+| **Görünüm (skin) sistemi**: Klasik ve Kış/Yılbaşı görünümü, mevsimlik otomatik geçiş, canlı önizleme | ✅ |
+| **Otomatik güncelleme**: yeni sürüm çıkınca sorar, onaylarsan indirip kurar (Ayarlar → Genel'den kapatılabilir) | ✅ |
 | **Asla silmez**: öğeler `<Yedek konumu>\<Kategori>` altına taşınır | ✅ |
 | Her taşıma anında günlüğe yazılır → tray veya arayüzden **Undo** (çökme olsa bile geri alınır) | ✅ |
 | Dry-run (önizleme) modu | ✅ |
@@ -62,12 +63,17 @@ Robot Noel Baba şapkası takar, kar yağar ve süpürdüğü dosyalar hediye pa
 - Yedek konumu başka bir sürücüdeyse öğe önce kopyalanır, kopya doğrulanır, sonra masaüstündeki orijinal kaldırılır. Kopya başarısız olursa orijinale dokunulmaz.
 - Kurulu olmayan (geliştirme) sürümde "Windows ile başlat" devre dışıdır.
 - Kategori klasörlerinin diskteki adları İngilizcedir (`Images`, `Music`...).
+- Kurulum dosyası **kod imzalı değil**. Windows 11'de **Akıllı Uygulama Denetimi** (Smart App Control) açıksa imzasız uygulamaları hiç çalıştırmaz; ayrıntılar aşağıda.
 
 ## Kurulum
 
 [Releases](https://github.com/SaylakCreative/DeskSweep-/releases) sayfasından `DeskSweep-Setup-x.y.z.exe` dosyasını indirip çalıştır. Sihirbaz Türkçe ve İngilizce destekler, kurulum kullanıcı bazlıdır, yönetici izni gerekmez.
 
-> Kurulum dosyası şu an kod imzalı değildir ([Code signing policy](CODE_SIGNING_POLICY.md): imza için SignPath Foundation programına başvuru sürecindedir); Windows SmartScreen "tanınmayan uygulama" uyarısı gösterebilir. **Ek bilgi → Yine de çalıştır** ile devam edebilirsin. Güvenmek istemezsen kaynağı okuyup kendin derleyebilirsin (aşağıda).
+> **Kurulum dosyası kod imzalı değildir** ([ayrıntılar](CODE_SIGNING_POLICY.md)).
+> - **SmartScreen** "tanınmayan uygulama" uyarısı verebilir: **Ek bilgi → Yine de çalıştır**.
+> - **Akıllı Uygulama Denetimi** (Smart App Control) açıksa Windows dosyayı "Uygulama Denetimi ilkesi bu dosyayı engelledi" diyerek hiç çalıştırmaz ve "yine de çalıştır" seçeneği sunmaz. Bu durumda ya *Windows Güvenliği → Uygulama ve tarayıcı denetimi → Akıllı Uygulama Denetimi* bölümünden kapatman (Windows sürümüne göre geri açmak sıfırlama gerektirebilir) ya da DeskSweep'i aşağıdaki gibi **kaynaktan** çalıştırman gerekir.
+>
+> Kurduktan sonra yeni sürümler uygulama içinden gelir: DeskSweep yeni sürümü bulunca sorar, **Kur** dersen indirir, SHA-512 özetini doğrular ve kendini günceller.
 
 ## Kaynaktan çalıştırma
 
@@ -91,11 +97,11 @@ Ayarlar `%APPDATA%\desksweep\config.json`, geri alma günlüğü aynı klasörde
 - `src/main` – tray, overlay penceresi, ayarlar penceresi, zamanlama, IPC.
 - `src/renderer` – canvas'ta robot animasyonu. `src/settings` – ayarlar arayüzü.
 
-Test için `DESKSWEEP_DESKTOP` ve `DESKSWEEP_USERDATA` ortam değişkenleri masaüstü ve ayar klasörünü geçici klasörlere yönlendirir.
+Test için `DESKSWEEP_DESKTOP` ve `DESKSWEEP_USERDATA` ortam değişkenleri masaüstü ve ayar klasörünü geçici klasörlere yönlendirir. `DESKSWEEP_UPDATE_URL` güncelleme kaynağını **yalnızca bu bilgisayardaki** (localhost) bir test sunucusuna yönlendirir; başka adresler yok sayılır.
 
 ## Gizlilik
 
-DeskSweep hiçbir veri toplamaz ve internete bağlanmaz. Ayrıntılar: [PRIVACY.md](PRIVACY.md).
+DeskSweep hiçbir veri toplamaz. Tek ağ bağlantısı isteğe bağlı güncelleme denetimidir: günde bir kez github.com'a yeni sürüm var mı diye sorar (Ayarlar → Genel'den kapatılabilir). Ayrıntılar: [PRIVACY.md](PRIVACY.md).
 
 ## Güvenlik ilkeleri
 

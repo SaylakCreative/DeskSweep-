@@ -11,6 +11,7 @@ import { resolveSkin } from "../core/skins";
 import type { Config, Entry, Language, PlanItem } from "../core/types";
 import type { ChildProcess } from "node:child_process";
 import { readDesktopIcons } from "./icons";
+import { checkForUpdates, startUpdateChecks } from "./updater";
 import { pushToBottom } from "./zorder";
 
 interface Run {
@@ -311,6 +312,7 @@ ipcMain.handle("settings:get", () => {
     strings,
     builtinCategories: BUILTIN_CATEGORIES,
     isPackaged: app.isPackaged,
+    version: app.getVersion(),
     resolvedSkin: resolveSkin(config.robot.skin),
     defaultDestination: resolveDestination({ ...config, destinationDir: "" }, desktopDir())
   };
@@ -346,6 +348,17 @@ ipcMain.handle("settings:openDestination", async (_e, dir: string) => {
   await shell.openPath(target);
 });
 
+ipcMain.handle("settings:checkUpdates", () => checkForUpdates(true));
+
+/** Tray "Check for updates": answers with a notification (the install prompt is a dialog). */
+async function manualUpdateCheck(): Promise<void> {
+  const l = lang();
+  const status = await checkForUpdates(true);
+  if (status.state === "upToDate") notify(t(l, "updateUpToDateNote"));
+  else if (status.state === "disabled") notify(t(l, "updatesDev"));
+  else if (status.state === "error") notify(t(l, "updatesError"));
+}
+
 ipcMain.on("settings:run", (_e, dry: boolean) => void startRun(Boolean(dry)));
 ipcMain.handle("settings:undo", () => undoLast());
 
@@ -374,6 +387,7 @@ function buildTray(): void {
       { label: t(l, "traySweep"), click: () => void startRun(false) },
       { label: t(l, "trayDry"), click: () => void startRun(true) },
       { label: t(l, "trayUndo"), click: () => notify(undoLast()) },
+      { label: t(l, "trayUpdates"), click: () => void manualUpdateCheck() },
       { type: "separator" },
       { label: t(l, "trayQuit"), click: () => app.quit() }
     ])
@@ -395,6 +409,7 @@ app.whenReady().then(() => {
   nativeTheme.themeSource = config.theme;
   buildTray();
   applyAutomation(config);
+  startUpdateChecks({ config: loadConfig, busy: () => Boolean(run) || starting, notify });
 
   const args = process.argv;
   if (args.includes("--dry-run")) void startRun(true);

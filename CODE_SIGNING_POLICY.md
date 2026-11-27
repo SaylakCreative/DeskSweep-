@@ -1,33 +1,28 @@
-# Code signing policy
+# Code signing and release integrity
 
-DeskSweep is free and open source (MIT). This page describes how its Windows installer is built and signed.
+*Last updated: 2026-11-24.*
 
-**Status:** code signing is being set up through the [SignPath Foundation](https://signpath.org) open source program. Until the application is approved, released installers are **not signed**; once it is, this page and the README are updated and releases are signed automatically.
+**DeskSweep installers are not code-signed.** An application to the free SignPath Foundation program was declined, and a paid certificate is not in place. This page explains what that means for you and how releases are built.
 
-## How releases are built and signed
+## What this means on Windows
 
-- Installers are built only by the GitHub Actions workflow [`release.yml`](.github/workflows/release.yml), from the tagged source in this repository. Nothing is built or signed on a developer machine.
-- The workflow uploads the unsigned installer and submits it to SignPath for signing. A signing request is **approved manually** by an approver before it is signed.
-- The signed installer is then attached to the matching [GitHub release](https://github.com/SaylakCreative/DeskSweep-/releases). Product name and version in the installer metadata come from `package.json`.
+- **SmartScreen** may show "Windows protected your PC / unrecognized app" when you run a downloaded installer. Choose **More info → Run anyway**.
+- **Smart App Control** (an optional Windows 11 protection, on by default on some new PCs) blocks unsigned apps it has never seen before, with no "run anyway" option. If it is on, Windows reports that an Application Control policy blocked the file. The options are to switch Smart App Control off in *Windows Security → App & browser control → Smart App Control* (Microsoft documents that turning it back on can require resetting Windows, depending on your version), or to [run DeskSweep from source](README.md) (`npm start`), which works because it uses the stock, well-known Electron binary.
 
-## Team roles
+## How releases are built
 
-DeskSweep currently has a single maintainer, who holds all roles. This list is updated when the team grows.
+- Installers are built only by the GitHub Actions workflow [`release.yml`](.github/workflows/release.yml), from the tagged source in this repository, and published as a [GitHub release](https://github.com/SaylakCreative/DeskSweep-/releases). Nothing is built on a developer machine for release.
+- Each release includes `latest.yml`, which lists the installer's **SHA-512 checksum**. The in-app updater refuses a download whose checksum does not match. You can verify a manual download the same way: `Get-FileHash -Algorithm SHA512 <file>` and compare it with `latest.yml` (base64-encoded there).
+- The maintainer's GitHub account is the root of trust for updates. It uses multi-factor authentication.
 
-| Role | Responsibility | Members |
-|---|---|---|
-| **Authors** | Trusted to change the source code without additional review | [SaylakCreative](https://github.com/SaylakCreative) |
-| **Reviewers** | Review every change from non-committers (pull requests) | [SaylakCreative](https://github.com/SaylakCreative) |
-| **Approvers** | Approve each signing request, i.e. decide whether a release may be signed | [SaylakCreative](https://github.com/SaylakCreative) |
+## Signing in the future
 
-All team members use multi-factor authentication on GitHub and SignPath.
+If a certificate becomes available, releases will be signed and this page updated. The release workflow already contains a dormant signing job (see [docs/signing](docs/signing/README.md)).
 
 ## Privacy
 
-This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
-
-DeskSweep contains no telemetry, analytics, crash reporting or automatic update checks. Its settings and undo journal stay in `%APPDATA%\desksweep` on your computer. Full details: [Privacy policy](PRIVACY.md).
+See the [Privacy policy](PRIVACY.md): DeskSweep collects no data; its only network access is the optional update check.
 
 ## Reporting problems
 
-If you believe a signed DeskSweep build is malicious or violates this policy, please [open an issue](https://github.com/SaylakCreative/DeskSweep-/issues).
+If you believe a DeskSweep build is malicious or violates this policy, please [open an issue](https://github.com/SaylakCreative/DeskSweep-/issues).
