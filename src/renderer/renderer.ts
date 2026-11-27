@@ -10,6 +10,8 @@ interface StartData {
   /** Where the robot's charging dock is: it rolls out of it and returns to it. */
   dock: { x: number; y: number };
   skin: string;
+  /** Speech-bubble texts in the app's language. */
+  bubbles: { eat: string; dryEat: string; oops: string; done: string; dryDone: string };
   speed: number;
   color: string;
   dry: boolean;
@@ -256,7 +258,8 @@ interface Window {
       // Sweep the moment the robot is on top of the icon, then pause only briefly.
       const result = await window.deskSweep.sweep(item.id);
       const at = performance.now();
-      bubble = { text: result.ok ? (data.dry ? skin.bubbles.dryEat : skin.bubbles.eat) : skin.bubbles.oops, until: at + 700 };
+      bubble = { text: result.ok ? (data.dry ? data.bubbles.dryEat : data.bubbles.eat) : data.bubbles.oops, until: at + 700 };
+      console.log(`bubble: ${bubble.text}`);
       if (result.ok) {
         eating.push({ label: item.name, x: item.x, y: item.y + 30, born: at });
         if (skin.confetti) burstConfetti(item.x, item.y, skin.confetti, at);
@@ -264,7 +267,8 @@ interface Window {
       await sleep(250);
     }
 
-    bubble = { text: data.dry ? skin.bubbles.dryDone : skin.bubbles.done, until: performance.now() + 1800 };
+    bubble = { text: data.dry ? data.bubbles.dryDone : data.bubbles.done, until: performance.now() + 1800 };
+    console.log(`bubble: ${bubble.text}`);
     await moveTo(dock.x, dock.y); // back home: the message stays up while it drives
     charging = true;
     await sleep(700);

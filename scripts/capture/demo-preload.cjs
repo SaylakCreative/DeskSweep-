@@ -1,5 +1,6 @@
 // Stand-in for the real preload: lets the unmodified renderer.js play on a fake desktop.
 const { contextBridge, ipcRenderer } = require("electron");
+const { bubbleTexts } = require(require("node:path").join(__dirname, "..", "..", "dist", "core", "skins"));
 
 let startCallback;
 
@@ -32,6 +33,6 @@ window.addEventListener("DOMContentLoaded", () => {
       const clearance = Math.min(...obstacles.map((o) => Math.hypot(o.x - c.x, o.y - c.y)));
       return clearance > best.clearance ? { ...c, clearance } : best;
     }, { x: 0, y: 0, clearance: -1 });
-    startCallback({ dock: { x: dock.x, y: dock.y }, skin: process.env.CAPTURE_SKIN || "classic", dry: false, width: window.innerWidth, height: window.innerHeight, speed: 300, color: "#6ea8ff", items });
+    startCallback({ dock: { x: dock.x, y: dock.y }, bubbles: bubbleTexts("en", process.env.CAPTURE_SKIN || "classic"), skin: process.env.CAPTURE_SKIN || "classic", dry: false, width: window.innerWidth, height: window.innerHeight, speed: 300, color: "#6ea8ff", items });
   }, 700);
 });

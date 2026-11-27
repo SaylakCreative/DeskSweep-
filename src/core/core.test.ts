@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { classify, globToRegExp, isProtected } from "./classifier";
 import { defaultConfig, normalizeConfig, parseConfigText } from "./config";
 import { strings, t } from "./i18n";
-import { isWinterSeason, resolveSkin } from "./skins";
+import { BUBBLE_KINDS, bubbleTexts, isWinterSeason, resolveSkin } from "./skins";
 import { launchDetached } from "./launch";
 import { localFeedOverride } from "./updates";
 import { matchIcons, parseIconDump } from "./iconMatch";
@@ -196,6 +196,21 @@ describe("skins", () => {
   it("config accepts only known skins", () => {
     expect(normalizeConfig({ robot: { skin: "winter" } }).robot.skin).toBe("winter");
     expect(normalizeConfig({ robot: { skin: "disco" } }).robot.skin).toBe("auto");
+  });
+});
+
+describe("speech bubbles", () => {
+  it("follow the app language and the skin", () => {
+    expect(bubbleTexts("en", "classic")).toEqual({ eat: "nom!", dryEat: "would nom!", oops: "oops!", done: "all clean!", dryDone: "preview done" });
+    expect(bubbleTexts("tr", "classic").eat).toBe("ham ham!");
+    expect(bubbleTexts("tr", "classic").done).toBe("tertemiz!");
+    expect(bubbleTexts("tr", "winter").done).toBe("mutlu yıllar!");
+  });
+
+  it("every skin has every bubble in both languages", () => {
+    for (const lang of ["en", "tr"] as const)
+      for (const skin of ["classic", "winter"] as const)
+        for (const kind of BUBBLE_KINDS) expect(strings[lang][`bubble.${skin}.${kind}`], `${lang} ${skin} ${kind}`).toBeTruthy();
   });
 });
 

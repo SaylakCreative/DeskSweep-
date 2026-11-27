@@ -3,6 +3,16 @@ import type { Language } from "./types";
 type Dict = Record<string, string>;
 
 const en: Dict = {
+  "bubble.classic.eat": "nom!",
+  "bubble.classic.dryEat": "would nom!",
+  "bubble.classic.oops": "oops!",
+  "bubble.classic.done": "all clean!",
+  "bubble.classic.dryDone": "preview done",
+  "bubble.winter.eat": "ho ho ho!",
+  "bubble.winter.dryEat": "ho ho? (preview)",
+  "bubble.winter.oops": "oh no!",
+  "bubble.winter.done": "happy holidays!",
+  "bubble.winter.dryDone": "preview done",
   appTitle: "DeskSweep Settings",
   updateFailed: "The update could not be started.",
   updateFailedDetail: "Windows may have blocked the installer: Smart App Control blocks apps without a trusted signature. You can download the new version manually from the releases page.",
@@ -110,6 +120,16 @@ const en: Dict = {
 };
 
 const tr: Dict = {
+  "bubble.classic.eat": "ham ham!",
+  "bubble.classic.dryEat": "ham ham? (önizleme)",
+  "bubble.classic.oops": "hay aksi!",
+  "bubble.classic.done": "tertemiz!",
+  "bubble.classic.dryDone": "önizleme bitti",
+  "bubble.winter.eat": "ho ho ho!",
+  "bubble.winter.dryEat": "ho ho? (önizleme)",
+  "bubble.winter.oops": "eyvah!",
+  "bubble.winter.done": "mutlu yıllar!",
+  "bubble.winter.dryDone": "önizleme bitti",
   appTitle: "DeskSweep Ayarları",
   updateFailed: "Güncelleme başlatılamadı.",
   updateFailedDetail: "Windows kurulum dosyasını engellemiş olabilir: Akıllı Uygulama Denetimi, güvenilir imzası olmayan uygulamaları engeller. Yeni sürümü indirme sayfasından elle indirebilirsin.",

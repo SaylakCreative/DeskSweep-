@@ -2,6 +2,11 @@
 
 All notable changes to DeskSweep. Versions below 1.0 are betas.
 
+## [0.2.1] — 2026-11-27
+
+### Changed
+- **The robot's speech bubbles follow the app language.** With Turkish selected the robot says "ham ham!", "tertemiz!", "hay aksi!" (and "mutlu yıllar!" in the Winter look) instead of the English "nom!", "all clean!", "oops!". The texts now live in the language file next to the rest of the UI.
+
 ## [0.2.0] — 2026-11-27
 
 ### Added

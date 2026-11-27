@@ -1,6 +1,6 @@
 {
   "name": "desksweep",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "An open-source robot vacuum that tidies your desktop. Safe by design: nothing is ever deleted, every sweep can be undone.",
   "license": "MIT",
   "author": "DeskSweep contributors",

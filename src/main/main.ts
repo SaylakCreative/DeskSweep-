@@ -7,7 +7,7 @@ import { strings, t } from "../core/i18n";
 import { Journal, applyMove } from "../core/journal";
 import { estimateIconPositions, pickDockSpot } from "../core/layout";
 import { buildPlan, resolveDestination } from "../core/planner";
-import { resolveSkin } from "../core/skins";
+import { bubbleTexts, resolveSkin } from "../core/skins";
 import type { Config, Entry, Language, PlanItem } from "../core/types";
 import type { ChildProcess } from "node:child_process";
 import { readDesktopIcons } from "./icons";
@@ -173,13 +173,15 @@ async function startRun(dry: boolean): Promise<void> {
     const area = display.workArea;
     const dock = pickDockSpot({ x: area.x - x, y: area.y - y, width: area.width, height: area.height }, [...positions.values()]);
 
+    const skinId = resolveSkin(config.robot.skin);
     win.showInactive();
     win.webContents.send("start", {
       dry,
       width,
       height,
       dock,
-      skin: resolveSkin(config.robot.skin),
+      skin: skinId,
+      bubbles: bubbleTexts(config.language, skinId), // speech bubbles follow the app language
       speed: config.robot.speed,
       color: config.robot.color,
       items: plan.map((p) => ({

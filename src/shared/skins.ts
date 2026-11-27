@@ -2,7 +2,8 @@
 //
 // This is a plain script, loaded before renderer.js (the overlay) and settings.js (the preview),
 // so it exposes everything through the single global `DeskSkins`. To add a skin: write a Skin
-// object below, register it in `skins`, and add its id to src/core/skins.ts and the i18n strings.
+// object below, register it in `skins`, and add its id to src/core/skins.ts and its name and speech-bubble
+// texts ("bubble.<id>.<kind>") to src/core/i18n.ts in both languages.
 
 interface SkinDrawState {
   /** Milliseconds, drives animations such as the spinning side brush. */
@@ -18,7 +19,6 @@ interface SkinAmbient {
 
 interface Skin {
   id: string;
-  bubbles: { eat: string; dryEat: string; oops: string; done: string; dryDone: string };
   /** Draws the robot centred on (0,0), already rotated to its heading. */
   drawBody(ctx: CanvasRenderingContext2D, state: SkinDrawState): void;
   /** Drawn after the body, centred on the robot but NOT rotated (hats, antennas...). */
@@ -65,7 +65,6 @@ const DeskSkins = (() => {
 
   const classic: Skin = {
     id: "classic",
-    bubbles: { eat: "nom!", dryEat: "would nom!", oops: "oops!", done: "all clean!", dryDone: "preview done" },
     drawBody: drawClassicBody,
     drawEaten: drawFileLabel
   };
@@ -132,7 +131,6 @@ const DeskSkins = (() => {
 
   const winter: Skin = {
     id: "winter",
-    bubbles: { eat: "ho ho ho!", dryEat: "ho ho? (preview)", oops: "oh no!", done: "happy holidays!", dryDone: "preview done" },
     drawBody: drawClassicBody,
     drawOverlay: drawSantaHat,
     createAmbient: createSnow,
